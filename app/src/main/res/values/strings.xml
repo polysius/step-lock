@@ -4,11 +4,19 @@
 
     <!-- Home -->
     <string name="home_title">Today</string>
-    <string name="home_phase_note">Phase 0 build: the permission setup works, but apps are not blocked yet. Blocking arrives in Phase 1.</string>
     <string name="home_checklist_title">Setup checklist</string>
     <string name="home_continue_setup">Continue setup</string>
-    <string name="protection_off_accessibility">Protection: OFF — Accessibility disabled</string>
-    <string name="protection_off_not_built">Protection: OFF — blocking is not built yet (Phase 0)</string>
+    <string name="protection_on">Protection: ON</string>
+    <string name="protection_degraded">Protection: DEGRADED — Accessibility disabled, apps are not being blocked</string>
+    <string name="protection_off">Protection: OFF</string>
+    <string name="protection_turn_on">Turn protection on</string>
+    <string name="protection_turn_off">Turn protection off</string>
+    <string name="protection_needs_accessibility">Turn on the AppLocker Accessibility service first (Continue setup).</string>
+    <string name="protection_turn_off_title">Turn protection off?</string>
+    <string name="protection_turn_off_body">Locked apps will open freely until you turn it on again. This cannot be done while a block or the bedtime lock is active.</string>
+    <string name="home_open_now">Locked apps are open right now.</string>
+    <string name="home_locked_bedtime">Locked apps are locked by the bedtime lock until %1$s.</string>
+    <string name="home_locked_block">Locked apps are locked by \"%1$s\" until %2$s.</string>
 
     <!-- Setup flow -->
     <string name="setup_title">Set up AppLocker</string>
@@ -34,7 +42,7 @@
     <string name="accessibility_why">Needed to detect when a locked app opens and show the lock screen. AppLocker only sees which app is in front, never what is on screen.</string>
 
     <string name="overlay_title">Draw over other apps</string>
-    <string name="overlay_why">Skipped for now. AppLocker plans to show its lock screen through the Accessibility service, which needs no extra permission. The final choice is made in Phase 1.</string>
+    <string name="overlay_why">Skipped for now. AppLocker plans to show its lock screen through the Accessibility service, which needs no extra permission. Phase 1 uses the Accessibility overlay, so nothing needs to be granted here.</string>
 
     <string name="usage_access_title">Usage access</string>
     <string name="usage_access_why">Needed as a backup detector and to count time spent in locked apps.</string>
@@ -55,4 +63,66 @@
     <!-- Health Connect rationale screen -->
     <string name="rationale_title">How AppLocker uses your health data</string>
     <string name="rationale_body">AppLocker reads your step count from Health Connect to decide when locked apps may open. The data stays on this device. It is never written back, uploaded, or shared.</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_apps">Apps</string>
+    <string name="tab_schedule">Schedule</string>
+    <string name="tab_history">History</string>
+
+    <!-- Lock screen -->
+    <string name="lock_headline_bedtime">Locked for bedtime</string>
+    <string name="lock_headline_schedule">Locked during a block</string>
+    <string name="lock_detail_bedtime">The bedtime lock ends at %1$s.</string>
+    <string name="lock_detail_schedule">Block \"%1$s\" ends at %2$s.</string>
+    <string name="lock_no_override">There is no emergency unlock. Wait for the lock to end.</string>
+    <string name="lock_back_to_home">Back to Home</string>
+
+    <!-- Strict refusals -->
+    <string name="strict_refused">Strict: this cannot be changed until %1$s.</string>
+
+    <!-- Apps -->
+    <string name="apps_title">Apps</string>
+    <string name="apps_all_apps_mode">Lock all apps</string>
+    <string name="apps_all_apps_off">Only the apps you switch on below are locked.</string>
+    <string name="apps_all_apps_on">Every app is locked unless you switch it on below to allow it.</string>
+    <string name="apps_search">Search apps</string>
+    <string name="apps_sort_note">Sorted: selected apps first, then A to Z.</string>
+    <string name="apps_always_allowed">Always allowed</string>
+    <string name="apps_caption_locked">Locked</string>
+    <string name="apps_caption_open">Open</string>
+    <string name="apps_caption_allowed">Allowed</string>
+
+    <!-- Schedule -->
+    <string name="schedule_title">Schedule</string>
+    <string name="schedule_add">Add</string>
+    <string name="schedule_strict_note">A block or break that is active right now cannot be edited, disabled or deleted until it ends.</string>
+    <string name="kind_block">Block</string>
+    <string name="kind_break">Break</string>
+    <string name="rule_add_title">Add to schedule</string>
+    <string name="rule_edit_title">Edit schedule item</string>
+    <string name="rule_name">Name</string>
+    <string name="rule_start">Start</string>
+    <string name="rule_end">End</string>
+    <string name="rule_enabled">Enabled</string>
+    <string name="rule_crosses_midnight">The end is earlier than the start, so this runs past midnight into the next morning.</string>
+    <string name="bedtime_title">Bedtime lock</string>
+    <string name="bedtime_summary">Bedtime %1$s, lock starts %2$d minutes before, ends %3$s.</string>
+    <string name="bedtime_lock_window">Locked from %1$s to %2$s every day, overriding breaks.</string>
+    <string name="bedtime_edit_title">Edit bedtime lock</string>
+    <string name="bedtime_time">Bedtime</string>
+    <string name="bedtime_lead">Lock starts this many minutes before bedtime</string>
+    <string name="bedtime_end">Lock ends</string>
+    <string name="bedtime_invalid">The lock would start at the same minute it ends. Change the bedtime, the lead or the end time.</string>
+    <string name="bedtime_preview">The lock will start at %1$s.</string>
+
+    <!-- History -->
+    <string name="history_title">History</string>
+    <string name="history_empty">Nothing yet. Blocked attempts and changes appear here.</string>
+
+    <!-- Dialog buttons -->
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_delete">Delete</string>
+    <string name="dialog_ok">OK</string>
 </resources>
