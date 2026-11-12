@@ -28,7 +28,7 @@
     <string name="state_unavailable">Unavailable</string>
 
     <string name="restricted_settings_title">Switch greyed out?</string>
-    <string name="restricted_settings_body">Android blocks some permissions for apps installed from a file. Open app info, tap the three-dot menu, choose Allow restricted settings, then come back. These labels are not yet verified on the Pixel 11.</string>
+    <string name="restricted_settings_body">Android blocks some permissions for apps installed from a file. Open app info, tap the three-dot menu, choose Restricted settings, then come back.</string>
 
     <string name="accessibility_title">Accessibility</string>
     <string name="accessibility_why">Needed to detect when a locked app opens and show the lock screen. AppLocker only sees which app is in front, never what is on screen.</string>
