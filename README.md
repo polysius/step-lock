@@ -4,9 +4,9 @@ An Android app that locks apps you choose until you earn access by walking, and 
 
 This is a personal, sideloaded build for one device (Pixel 11 with a Galaxy Watch Ultra feeding steps through Samsung Health and Health Connect).
 
-## Status: Phase 1 (schedule blocking), waiting for on-device testing
+## Status: Phase 1 (schedule blocking), tested on the Pixel 11
 
-Phase 0 (the first-launch permission flow) passed on the Pixel 11. Phase 1 adds schedule-only blocking. Nothing in Phase 1 has been run on a device yet.
+Phase 0 (the first-launch permission flow) passed on the Pixel 11. Phase 1 adds schedule-only blocking and was tested on the Pixel 11.
 
 What Phase 1 does:
 
@@ -26,7 +26,7 @@ This differs from the spec's backup detector. The spec also proposes a UsageStat
 
 A still-open locked app is re-checked every 15 seconds, so a block that starts while the app is open locks it.
 
-After a reboot, Android is expected to re-bind an enabled Accessibility service by itself. The Android documentation does not say so, which is why it is on the device checklist in `TESTING.md`.
+After a reboot, Android re-binds the enabled Accessibility service by itself. This was confirmed on the Pixel 11. The Android documentation does not promise it.
 
 ### Decisions recorded (spec section 15)
 
@@ -99,7 +99,15 @@ Phase 0 checklist passed on 11 November 2026.
 - Health Connect is built in, not a separate app.
 - Restricted Settings appeared for the sideloaded APK, so the guidance screen is needed.
 
-The Phase 1 results are recorded here after the checklist in `TESTING.md` is done.
+Phase 1 results on the Pixel 11 (Android 17):
+
+- The lock screen appears 12 to 51 ms after a locked app opens, with no visible flash.
+- Back and Back to Home both land on the launcher.
+- Blocking resumes after a reboot without opening AppLocker.
+- The status bar still shows above the lock screen. The blocked app is not visible through it.
+- The first build crashed when the overlay appeared, because the lifecycle owner was set on the wrong view. That is fixed.
+- Open: the owner reported that the bedtime lock did not override a break. The rules engine tests say it should, so the test setup is the first suspect, since a break had been changed into a block on the device. It has not been reproduced or fixed.
+- Not measured: battery use over a full day.
 
 ## Tuning constants and defaults
 
