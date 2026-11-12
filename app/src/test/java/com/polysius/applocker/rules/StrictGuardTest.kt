@@ -105,6 +105,17 @@ class StrictGuardTest {
     }
 
     @Test
+    fun `converting a stored block into a break inside the running block is refused`() {
+        val running = rule(ScheduleKind.BLOCK, 10, 14)
+        val storedBlock = rule(ScheduleKind.BLOCK, 12, 13)
+        val converted = storedBlock.copy(kind = ScheduleKind.BREAK)
+        assertEquals(
+            StrictResult.Refused(at(14)),
+            StrictGuard.saveRule(converted, storedBlock, config(running), at(10, 30)),
+        )
+    }
+
+    @Test
     fun `break can be created when no lock is in force`() {
         val cfg = config(rule(ScheduleKind.BLOCK, 6, 9))
         assertEquals(allowed, StrictGuard.saveRule(rule(ScheduleKind.BREAK, 12, 13), null, cfg, at(9)))

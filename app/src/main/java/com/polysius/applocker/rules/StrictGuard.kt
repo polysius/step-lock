@@ -41,7 +41,7 @@ object StrictGuard {
         if (rule.kind != ScheduleKind.BREAK || !rule.isEnabled) return StrictResult.Allowed
         val blockEnd = activeBlockEnd(config, now) ?: return StrictResult.Allowed
 
-        val alreadyOpen = previous?.takeIf { it.isEnabled }?.window
+        val alreadyOpen = previous?.takeIf { it.isEnabled && it.kind == ScheduleKind.BREAK }?.window
         val opensNewMinute = generateSequence(now) { it.plusMinutes(1) }
             .takeWhile { it < blockEnd }
             .any { rule.window.isActive(it) && alreadyOpen?.isActive(it) != true }
