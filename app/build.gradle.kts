@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -16,9 +17,21 @@ android {
         versionName = "0.1.0-phase0"
     }
 
+    buildTypes {
+        debug {
+            // Lets createDebugUnitTestCoverageReport measure the rules engine (spec section 13.1).
+            enableUnitTestCoverage = true
+        }
+    }
+
     buildFeatures {
         compose = true
     }
+}
+
+ksp {
+    // Room writes each schema version here so later migrations can be tested against it.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -32,6 +45,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.health.connect.client)
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit)
 }
