@@ -68,6 +68,11 @@ class MainActivity : ComponentActivity() {
     private fun AppLockerRoot() {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+        LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+            // A rotation also stops the activity; only a real departure should re-prompt.
+            if (!isChangingConfigurations) viewModel.onAppLeft()
+        }
+
         // Permissions can change while the user is in Settings, so re-read them on every return.
         LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refreshPermissions() }
 

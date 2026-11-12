@@ -13,6 +13,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import com.polysius.applocker.blocking.AppLockerAccessibilityService
+import kotlin.coroutines.cancellation.CancellationException
 
 /** Reads the current state of every permission in [PermissionKind]. Never changes anything. */
 class PermissionChecker(private val context: Context) {
@@ -65,9 +66,16 @@ class PermissionChecker(private val context: Context) {
         val status = HealthConnectClient.getSdkStatus(context)
         if (status != HealthConnectClient.SDK_AVAILABLE) return GrantState.UNAVAILABLE
 
-        val client = HealthConnectClient.getOrCreate(context)
-        val granted = client.permissionController.getGrantedPermissions()
-        return grantedIf(granted.containsAll(healthPermissions))
+        return try {
+            val client = HealthConnectClient.getOrCreate(context)
+            val granted = client.permissionController.getGrantedPermissions()
+            grantedIf(granted.containsAll(healthPermissions))
+        } catch (error: CancellationException) {
+            throw error
+        } catch (error: Exception) {
+            // A Health Connect failure must not crash the checklist; show the item as unavailable.
+            GrantState.UNAVAILABLE
+        }
     }
 
     private fun isIgnoringBatteryOptimizations(): Boolean {

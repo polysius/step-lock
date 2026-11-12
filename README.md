@@ -61,7 +61,9 @@ Navigation Compose, Room, CameraX and ML Kit are not added yet. Each is added in
 
 Product defaults live in `settings/AppDefaults.kt` as `DEFAULT_*` constants and are only used to seed first-run settings: bedtime time, bedtime lead, day-boundary time, warning thresholds. Earn-window and step defaults are added with the earning rules in Phase 2.
 
-There are no tuning constants yet.
+Tuning constants (implementation values, not product settings):
+
+- `notificationTimeout="100"` in `res/xml/accessibility_service_config.xml`: the minimum milliseconds between Accessibility events delivered to the service. Not used for blocking decisions in Phase 0.
 
 ## Known limits
 

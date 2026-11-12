@@ -41,7 +41,9 @@ fun SetupScreen(
     modifier: Modifier = Modifier,
 ) {
     val steps = PermissionKind.entries
-    var stepIndex by rememberSaveable { mutableIntStateOf(0) }
+    var stepIndex by rememberSaveable {
+        mutableIntStateOf(steps.indexOfFirst { grants[it]?.needsAttention == true }.coerceAtLeast(0))
+    }
     val kind = steps[stepIndex]
     val state = grants[kind] ?: GrantState.MISSING
     val isLastStep = stepIndex == steps.lastIndex

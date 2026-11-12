@@ -33,6 +33,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
+    private var appWasLeft = false
+
     val healthPermissions: Set<String> get() = permissionChecker.healthPermissions
 
     init {
@@ -46,10 +48,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshPermissions() {
         viewModelScope.launch {
             val grants = permissionChecker.checkAll()
+            val reopened = appWasLeft
+            appWasLeft = false
             _uiState.update { current ->
-                current.copy(grants = grants, screen = current.screen.orInitialChoice(grants))
+                val screen = current.screen.orInitialChoice(grants)
+                val needsSetup = grants.values.any { it.needsAttention }
+                current.copy(
+                    grants = grants,
+                    screen = if (reopened && needsSetup) Screen.SETUP else screen,
+                )
             }
         }
+    }
+
+    /**
+     * Called when the app leaves the screen. Android keeps the process alive after Back or Home, so
+     * the next open must prompt again for anything still missing (FR-48), not only after a restart.
+     */
+    fun onAppLeft() {
+        appWasLeft = true
     }
 
     fun showSetup() = _uiState.update { it.copy(screen = Screen.SETUP) }

@@ -4,8 +4,9 @@ package com.polysius.applocker.settings
  * Initial values for the user-editable settings.
  *
  * These are presets only (spec section 3.4). They are written to storage once on first run by
- * [SettingsRepository.seedDefaultsIfNeeded]; after that, the stored value governs behaviour and
- * nothing else in the code may use these constants to make a decision.
+ * [SettingsRepository.seedDefaultsIfNeeded]; after that, the stored value governs behaviour. The
+ * only other use is [SettingsRepository] reading before seeding has finished. No rule or screen
+ * may use these constants to make a decision.
  */
 object AppDefaults {
     /** 22:30, expressed as minutes since local midnight. */
