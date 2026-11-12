@@ -33,6 +33,7 @@ class AlwaysAllowedApps(private val context: Context) {
 
     private fun lookUp(): Set<String> {
         val packages = mutableSetOf(context.packageName, SYSTEM_UI_PACKAGE)
+        packages += IN_CALL_PACKAGES
         context.getSystemService(TelecomManager::class.java)?.defaultDialerPackage?.let(packages::add)
 
         val homeIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
@@ -67,6 +68,9 @@ class AlwaysAllowedApps(private val context: Context) {
     private companion object {
         const val SYSTEM_UI_PACKAGE = "com.android.systemui"
         const val ANDROID_PACKAGE = "android"
+
+        /** In-call screens that are separate from the default dialler on common Android builds (FR-37). */
+        val IN_CALL_PACKAGES = setOf("com.android.incallui", "com.samsung.android.incallui")
 
         /** How long the looked-up set is reused. Tuning constant, not a product setting. */
         const val CACHE_MILLIS = 60_000L

@@ -1,8 +1,8 @@
 package com.polysius.applocker
 
+import com.polysius.applocker.blocking.EnforcementState
 import com.polysius.applocker.data.HistoryType
 import com.polysius.applocker.rules.BedtimeRule
-import com.polysius.applocker.rules.RulesConfig
 import com.polysius.applocker.rules.ScheduleKind
 import com.polysius.applocker.rules.ScheduleRule
 import com.polysius.applocker.rules.StrictGuard
@@ -21,9 +21,15 @@ class AppController(
     private val now: () -> LocalDateTime = { LocalDateTime.now() },
 ) {
 
-    private suspend fun config(): RulesConfig {
-        val state = container.enforcementState.first { it != null }
-        return state!!.config
+    private suspend fun state(): EnforcementState = container.enforcementState.first { it != null }!!
+
+    /**
+     * Runs [check] against the current rules. While protection is off nothing is locked, so no
+     * change can unlock anything and the check is skipped.
+     */
+    private suspend fun strictCheck(check: (EnforcementState, LocalDateTime) -> StrictResult): StrictResult {
+        val state = state()
+        return if (state.protectionEnabled) check(state, now()) else StrictResult.Allowed
     }
 
     private fun millis() = System.currentTimeMillis()
@@ -33,15 +39,12 @@ class AppController(
      * here, never taken from the caller, so an edit cannot skip the check on the active rule.
      */
     suspend fun saveRule(rule: ScheduleRule): StrictResult {
-        val moment = now()
-        val config = config()
-        val previous = config.rules.firstOrNull { it.id == rule.id && rule.id != 0L }
-        if (previous != null) {
-            val editCheck = StrictGuard.changeRule(previous, moment)
-            if (editCheck is StrictResult.Refused) return editCheck
+        val previous = state().config.rules.firstOrNull { it.id == rule.id && rule.id != 0L }
+        val check = strictCheck { state, moment ->
+            val editCheck = previous?.let { StrictGuard.changeRule(it, moment) } ?: StrictResult.Allowed
+            if (editCheck is StrictResult.Refused) editCheck else StrictGuard.saveRule(rule, previous, state.config, moment)
         }
-        val saveCheck = StrictGuard.saveRule(rule, config, moment)
-        if (saveCheck is StrictResult.Refused) return saveCheck
+        if (check is StrictResult.Refused) return check
 
         container.schedule.save(rule, millis())
         val verb = if (previous == null) "Added" else "Edited"
@@ -50,18 +53,20 @@ class AppController(
     }
 
     suspend fun deleteRule(rule: ScheduleRule): StrictResult {
-        val check = StrictGuard.changeRule(rule, now())
+        // The stored version decides, not the one the caller holds.
+        val stored = state().config.rules.firstOrNull { it.id == rule.id } ?: return StrictResult.Allowed
+        val check = strictCheck { _, moment -> StrictGuard.changeRule(stored, moment) }
         if (check is StrictResult.Refused) return check
 
-        container.schedule.delete(rule.id)
-        container.history.log(HistoryType.SCHEDULE_CHANGE, "Deleted ${rule.kind.label()} \"${rule.name}\"", nowMillis = millis())
+        container.schedule.delete(stored.id)
+        container.history.log(HistoryType.SCHEDULE_CHANGE, "Deleted ${stored.kind.label()} \"${stored.name}\"", nowMillis = millis())
         return StrictResult.Allowed
     }
 
     suspend fun setBedtime(bedtimeMinutes: Int, leadMinutes: Int, endMinutes: Int): StrictResult {
         val candidate = BedtimeRule(bedtimeMinutes, leadMinutes, endMinutes, DayOfWeek.entries.toSet())
         require(candidate.isValid) { "Bedtime lock would start exactly when it ends" }
-        val check = StrictGuard.changeBedtime(config(), now())
+        val check = strictCheck { state, moment -> StrictGuard.changeBedtime(state.config, moment) }
         if (check is StrictResult.Refused) return check
 
         container.settings.setBedtime(bedtimeMinutes, leadMinutes, endMinutes)
@@ -75,7 +80,7 @@ class AppController(
 
     suspend fun setLocked(packageName: String, label: String, locked: Boolean): StrictResult {
         if (!locked) {
-            val check = StrictGuard.weakenProtection(config(), now())
+            val check = strictCheck { state, moment -> StrictGuard.weakenProtection(state.config, moment) }
             if (check is StrictResult.Refused) return check
         }
         container.lockedApps.setLocked(packageName, label, locked, millis())
@@ -86,9 +91,8 @@ class AppController(
 
     /** Allowlisting only matters in all-apps mode, so that is the only case the guard applies to. */
     suspend fun setAllowlisted(packageName: String, label: String, allowlisted: Boolean): StrictResult {
-        val state = container.enforcementState.first { it != null }!!
-        if (allowlisted && state.allAppsMode) {
-            val check = StrictGuard.weakenProtection(state.config, now())
+        if (allowlisted && state().allAppsMode) {
+            val check = strictCheck { state, moment -> StrictGuard.weakenProtection(state.config, moment) }
             if (check is StrictResult.Refused) return check
         }
         container.lockedApps.setAllowlisted(packageName, label, allowlisted, millis())
@@ -98,22 +102,27 @@ class AppController(
     }
 
     suspend fun setAllAppsMode(enabled: Boolean): StrictResult {
-        val state = container.enforcementState.first { it != null }!!
-        val check = if (enabled) {
-            StrictGuard.enableAllAppsMode(state.config, now(), state.lockedPackages, state.allowlistedPackages)
-        } else {
-            StrictGuard.weakenProtection(state.config, now())
+        val check = strictCheck { state, moment ->
+            if (enabled) {
+                StrictGuard.enableAllAppsMode(state.config, moment, state.lockedPackages, state.allowlistedPackages)
+            } else {
+                StrictGuard.weakenProtection(state.config, moment)
+            }
         }
         if (check is StrictResult.Refused) return check
+
         container.settings.setAllAppsMode(enabled)
         container.history.log(HistoryType.APP_LIST_CHANGE, "All-apps mode ${if (enabled) "on" else "off"}", nowMillis = millis())
         return StrictResult.Allowed
     }
 
-    /** Turning protection on is always allowed. Turning it off is refused while a rule is active. */
+    /**
+     * Turning protection on is always allowed. Turning it off is refused while a rule is active.
+     * This check always applies, so protection cannot be switched off during a lock.
+     */
     suspend fun setProtectionEnabled(enabled: Boolean): StrictResult {
         if (!enabled) {
-            val check = StrictGuard.weakenProtection(config(), now())
+            val check = StrictGuard.weakenProtection(state().config, now())
             if (check is StrictResult.Refused) return check
         }
         container.settings.setProtectionEnabled(enabled)

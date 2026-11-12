@@ -52,7 +52,7 @@ class StrictGuardTest {
     fun `break that is active during a block cannot be created`() {
         val cfg = config(rule(ScheduleKind.BLOCK, 10, 14))
         val breakWindow = rule(ScheduleKind.BREAK, 12, 13)
-        assertEquals(StrictResult.Refused(at(14)), StrictGuard.saveRule(breakWindow, cfg, at(12, 30)))
+        assertEquals(StrictResult.Refused(at(14)), StrictGuard.saveRule(breakWindow, null, cfg, at(12, 30)))
     }
 
     @Test
@@ -61,42 +61,66 @@ class StrictGuardTest {
         val soon = rule(ScheduleKind.BREAK, 10, 13).copy(
             window = TimeWindow(everyDay, 10 * 60 + 31, 13 * 60),
         )
-        assertEquals(StrictResult.Refused(at(12)), StrictGuard.saveRule(soon, cfg, at(10, 30)))
+        assertEquals(StrictResult.Refused(at(12)), StrictGuard.saveRule(soon, null, cfg, at(10, 30)))
     }
 
     @Test
     fun `break that opens only after the lock ends is allowed`() {
         val cfg = config(rule(ScheduleKind.BLOCK, 10, 12))
         val lunch = rule(ScheduleKind.BREAK, 12, 13)
-        assertEquals(allowed, StrictGuard.saveRule(lunch, cfg, at(10, 30)))
+        assertEquals(allowed, StrictGuard.saveRule(lunch, null, cfg, at(10, 30)))
     }
 
     @Test
-    fun `break during the bedtime lock is refused`() {
+    fun `break inside the bedtime lock opens nothing and is allowed`() {
+        // Bedtime always wins over breaks, so this break cannot unlock any app.
         val night = rule(ScheduleKind.BREAK, 22, 23)
+        assertEquals(allowed, StrictGuard.saveRule(night, null, config(), at(22)))
+    }
+
+    @Test
+    fun `renaming or shortening an existing break during a block is allowed`() {
+        val cfg = config(rule(ScheduleKind.BLOCK, 6, 20))
+        val stored = rule(ScheduleKind.BREAK, 12, 13)
+        val shortened = stored.copy(window = TimeWindow(everyDay, 12 * 60, 12 * 60 + 30))
+        assertEquals(allowed, StrictGuard.saveRule(shortened, stored, cfg, at(10)))
+    }
+
+    @Test
+    fun `enabling a disabled break that opens during the block is refused`() {
+        val cfg = config(rule(ScheduleKind.BLOCK, 6, 20))
+        val stored = rule(ScheduleKind.BREAK, 12, 13, enabled = false)
         assertEquals(
-            StrictResult.Refused(LocalDateTime.of(2026, 11, 12, 5, 45)),
-            StrictGuard.saveRule(night, config(), at(22)),
+            StrictResult.Refused(at(20)),
+            StrictGuard.saveRule(stored.copy(isEnabled = true), stored, cfg, at(12, 30)),
         )
+    }
+
+    @Test
+    fun `extending an existing break into the running block is refused`() {
+        val cfg = config(rule(ScheduleKind.BLOCK, 6, 20))
+        val stored = rule(ScheduleKind.BREAK, 12, 13)
+        val extended = stored.copy(window = TimeWindow(everyDay, 11 * 60, 13 * 60))
+        assertEquals(StrictResult.Refused(at(20)), StrictGuard.saveRule(extended, stored, cfg, at(10)))
     }
 
     @Test
     fun `break can be created when no lock is in force`() {
         val cfg = config(rule(ScheduleKind.BLOCK, 6, 9))
-        assertEquals(allowed, StrictGuard.saveRule(rule(ScheduleKind.BREAK, 12, 13), cfg, at(9)))
+        assertEquals(allowed, StrictGuard.saveRule(rule(ScheduleKind.BREAK, 12, 13), null, cfg, at(9)))
     }
 
     @Test
     fun `disabled break that would be active during a block can be saved`() {
         val cfg = config(rule(ScheduleKind.BLOCK, 10, 14))
         val breakWindow = rule(ScheduleKind.BREAK, 12, 13, enabled = false)
-        assertEquals(allowed, StrictGuard.saveRule(breakWindow, cfg, at(12, 30)))
+        assertEquals(allowed, StrictGuard.saveRule(breakWindow, null, cfg, at(12, 30)))
     }
 
     @Test
     fun `block that is active now can be created because it only adds locking`() {
         val block = rule(ScheduleKind.BLOCK, 12, 13)
-        assertEquals(allowed, StrictGuard.saveRule(block, config(), at(12, 30)))
+        assertEquals(allowed, StrictGuard.saveRule(block, null, config(), at(12, 30)))
     }
 
     // All-apps mode

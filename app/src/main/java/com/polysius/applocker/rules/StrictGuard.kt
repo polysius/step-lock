@@ -26,18 +26,26 @@ object StrictGuard {
     }
 
     /**
-     * Saving [rule] (new or edited). A break that opens at any moment before the current lock ends
-     * is an unlock path, so it is refused, even if it starts a minute from now. A block that is
-     * active right now only adds locking, so it is allowed.
+     * Saving [rule] (new or edited, [previous] being the stored version). A break that opens a
+     * minute the stored version did not open, before the current block ends, is an unlock path,
+     * so it is refused, even if it starts a minute from now. A block that is active right now only
+     * adds locking, so it is allowed. Breaks never override the bedtime lock, so a break that
+     * falls inside it opens nothing and is allowed.
      */
-    fun saveRule(rule: ScheduleRule, config: RulesConfig, now: LocalDateTime): StrictResult {
+    fun saveRule(
+        rule: ScheduleRule,
+        previous: ScheduleRule?,
+        config: RulesConfig,
+        now: LocalDateTime,
+    ): StrictResult {
         if (rule.kind != ScheduleKind.BREAK || !rule.isEnabled) return StrictResult.Allowed
-        val lockEnd = activeLockEnd(config, now) ?: return StrictResult.Allowed
+        val blockEnd = activeBlockEnd(config, now) ?: return StrictResult.Allowed
 
-        val opensDuringLock = generateSequence(now) { it.plusMinutes(1) }
-            .takeWhile { it < lockEnd }
-            .any { rule.window.isActive(it) }
-        return if (opensDuringLock) StrictResult.Refused(lockEnd) else StrictResult.Allowed
+        val alreadyOpen = previous?.takeIf { it.isEnabled }?.window
+        val opensNewMinute = generateSequence(now) { it.plusMinutes(1) }
+            .takeWhile { it < blockEnd }
+            .any { rule.window.isActive(it) && alreadyOpen?.isActive(it) != true }
+        return if (opensNewMinute) StrictResult.Refused(blockEnd) else StrictResult.Allowed
     }
 
     /** Changing bedtime time, lead or end time during the bedtime lock. */
@@ -69,11 +77,15 @@ object StrictGuard {
     /** When the lock now in force ends (the latest end of any active block or bedtime lock), or null. */
     private fun activeLockEnd(config: RulesConfig, now: LocalDateTime): LocalDateTime? {
         val bedtimeEnd = config.bedtime.window.activeUntil(now)
-        val blockEnds = config.rules
+        return listOfNotNull(activeBlockEnd(config, now), bedtimeEnd).maxOrNull()
+    }
+
+    /** When the latest active schedule block ends, or null if none is active. */
+    private fun activeBlockEnd(config: RulesConfig, now: LocalDateTime): LocalDateTime? =
+        config.rules
             .filter { it.isEnabled && it.kind == ScheduleKind.BLOCK }
             .mapNotNull { it.window.activeUntil(now) }
-        return (blockEnds + listOfNotNull(bedtimeEnd)).maxOrNull()
-    }
+            .maxOrNull()
 
     private fun refuseIfActive(activeUntil: LocalDateTime?): StrictResult =
         if (activeUntil == null) StrictResult.Allowed else StrictResult.Refused(activeUntil)

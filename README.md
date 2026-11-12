@@ -57,7 +57,7 @@ You need a JDK 21 and the Android SDK (platform 37, build-tools 36 or newer).
 
 Run the unit tests with `./gradlew testDebugUnitTest` and lint with `./gradlew lintDebug`. `./gradlew createDebugUnitTestCoverageReport` writes a coverage report to `app/build/reports/coverage`.
 
-The rules engine (`rules` package) is pure Kotlin. Its tests cover every line and every branch (70 of 70 branches, 80 of 80 lines) as of Phase 1.
+The rules engine (`rules` package) is pure Kotlin. Its tests cover every line and every branch (84 of 84 branches, 82 of 82 lines) as of Phase 1.
 
 ## Install on the phone
 
