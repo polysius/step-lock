@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">AppLocker</string>
+    <string name="accessibility_service_description">Detects which app comes to the foreground so AppLocker can show its lock screen. It cannot read anything on screen.</string>
+
+    <!-- Home -->
+    <string name="home_title">Today</string>
+    <string name="home_phase_note">Phase 0 build: the permission setup works, but apps are not blocked yet. Blocking arrives in Phase 1.</string>
+    <string name="home_checklist_title">Setup checklist</string>
+    <string name="home_continue_setup">Continue setup</string>
+    <string name="protection_off_accessibility">Protection: OFF — Accessibility disabled</string>
+    <string name="protection_off_not_built">Protection: OFF — blocking is not built yet (Phase 0)</string>
+
+    <!-- Setup flow -->
+    <string name="setup_title">Set up AppLocker</string>
+    <string name="setup_step_counter">Step %1$d of %2$d</string>
+    <string name="setup_back">Back</string>
+    <string name="setup_next">Next</string>
+    <string name="setup_finish">Finish</string>
+    <string name="setup_not_now">Not now (protection stays OFF)</string>
+    <string name="setup_warning_protection_off">Protection stays OFF until the missing permissions are granted.</string>
+    <string name="setup_open_settings">Open settings</string>
+    <string name="setup_open_app_info">Open app info</string>
+    <string name="setup_allow">Allow</string>
+
+    <string name="state_granted">Granted</string>
+    <string name="state_missing">Missing</string>
+    <string name="state_not_needed">Not needed</string>
+    <string name="state_unavailable">Unavailable</string>
+
+    <string name="restricted_settings_title">Switch greyed out?</string>
+    <string name="restricted_settings_body">Android blocks some permissions for apps installed from a file. Open app info, tap the three-dot menu, choose Allow restricted settings, then come back. These labels are not yet verified on the Pixel 11.</string>
+
+    <string name="accessibility_title">Accessibility</string>
+    <string name="accessibility_why">Needed to detect when a locked app opens and show the lock screen. AppLocker only sees which app is in front, never what is on screen.</string>
+
+    <string name="overlay_title">Draw over other apps</string>
+    <string name="overlay_why">Skipped for now. AppLocker plans to show its lock screen through the Accessibility service, which needs no extra permission. The final choice is made in Phase 1.</string>
+
+    <string name="usage_access_title">Usage access</string>
+    <string name="usage_access_why">Needed as a backup detector and to count time spent in locked apps.</string>
+
+    <string name="health_connect_title">Health Connect (steps)</string>
+    <string name="health_connect_why">Needed to count steps in your earn window. AppLocker only reads steps and never writes health data.</string>
+    <string name="health_connect_unavailable">Health Connect is not available on this device.</string>
+    <string name="health_connect_denied_hint">If the prompt does not appear, open Health Connect settings and allow Steps for AppLocker there.</string>
+    <string name="health_connect_open_settings">Open Health Connect settings</string>
+
+    <string name="battery_title">Battery: unrestricted</string>
+    <string name="battery_why">Needed so Android does not stop blocking and step syncing in the background.</string>
+
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_why">Needed for the notification Android requires while protection is running.</string>
+    <string name="notifications_open_settings">Open notification settings</string>
+
+    <!-- Health Connect rationale screen -->
+    <string name="rationale_title">How AppLocker uses your health data</string>
+    <string name="rationale_body">AppLocker reads your step count from Health Connect to decide when locked apps may open. The data stays on this device. It is never written back, uploaded, or shared.</string>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A padlock, drawn inside the 66dp safe zone of the adaptive icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,50 L70,50 Q73,50 73,53 L73,74 Q73,77 70,77 L38,77 Q35,77 35,74 L35,53 Q35,50 38,50 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M43,50 L43,42 A11,11 0 0 1 65,42 L65,50"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="5" />
+</vector>
