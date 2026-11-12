@@ -40,11 +40,14 @@ class LockOverlay(
 
         val owner = OverlayLifecycleOwner().also { it.start() }
         val composeView = ComposeView(service).apply {
-            setViewTreeLifecycleOwner(owner)
-            setViewTreeSavedStateRegistryOwner(owner)
             setContent { AppLockerTheme { LockScreen(info, onBackToHome) } }
         }
-        val container = BackKeyFrameLayout(service, onBackToHome).apply { addView(composeView) }
+        // Compose looks for the owners from the window's root view, so they go on the container.
+        val container = BackKeyFrameLayout(service, onBackToHome).apply {
+            setViewTreeLifecycleOwner(owner)
+            setViewTreeSavedStateRegistryOwner(owner)
+            addView(composeView)
+        }
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
