@@ -34,7 +34,7 @@ Run the unit tests with `./gradlew testDebugUnitTest` and lint with `./gradlew l
 2. Run `adb install -r app/build/outputs/apk/debug/app-debug.apk`, or copy the APK to the phone and open it.
 3. Follow the checklist in `TESTING.md`.
 
-If Accessibility or Usage Access is greyed out, Android is applying Restricted Settings to a sideloaded app. Open Settings > Apps > AppLocker, tap the three-dot menu, and choose Allow restricted settings. These labels are written from documentation and are not yet verified on the Pixel 11.
+If Accessibility or Usage Access is greyed out, Android is applying Restricted Settings to a sideloaded app. In the app, tap Open app info, tap the three-dot menu at the top, and enable restricted settings (the Settings label reads "Restricted settings"). Verified on the Pixel 11 for the Phase 0 APK.
 
 ## Versions used
 
@@ -53,7 +53,15 @@ Checked against Google Maven on 11 November 2026.
 | compileSdk, targetSdk | 37 |
 | minSdk | 34 |
 
-minSdk is 34 because Health Connect is part of the Android framework from API 34. The Android version on the Pixel 11 is not yet verified.
+minSdk is 34 because Health Connect is part of the Android framework from API 34.
+
+## Verified on the Pixel 11
+
+Phase 0 checklist passed on 11 November 2026.
+
+- Android version: 17. The API level was not read from the device; Android 17 corresponds to API 37, which matches the compileSdk the libraries required.
+- Health Connect is built in, not a separate app.
+- Restricted Settings appeared for the sideloaded APK, so the guidance screen is needed.
 
 Navigation Compose, Room, CameraX and ML Kit are not added yet. Each is added in the phase that needs it.
 
